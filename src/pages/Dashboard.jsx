@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { fetchWeather, fetchAirQuality } from "../services/weatherApi";
 import { useWeatherStore } from "../store/useWeatherStore";
@@ -18,8 +18,9 @@ import ScrollableLineChart from "@/components/charts/SimpleLineChart";
 const Dashboard = () => {
   const { location } = useGeolocation();
   const { weather, setWeather, airQuality, setAirQuality, unit, toggleUnit } = useWeatherStore();
+  const [isOpen, setIsOpen] = useState(false);
 
-  const chartData = weather?.hourly.time.map((time, i) => ({
+  const chartData = weather?.hourly?.time.map((time, i) => ({
     time: new Date(time).getHours() + ":00",
     temperature: convertTemp(weather.hourly.temperature_2m[i], unit),
     humidity: weather.hourly.relativehumidity_2m[i],
@@ -35,22 +36,39 @@ const Dashboard = () => {
   }));
 
   useEffect(() => {
-    if (location) {
-      fetchWeather(location.lat, location.lon).then(setWeather);
-      fetchAirQuality(location.lat, location.lon).then(setAirQuality);
-    }
+    if (!location) return;
+  
+    const loadData = async () => {
+      try {
+        const weatherRes = await fetchWeather(location.lat, location.lon);
+        setWeather(weatherRes || {}); 
+      } catch (err) {
+        console.error("Weather API failed:", err);
+        setWeather({}); 
+      }
+  
+      try {
+        const airRes = await fetchAirQuality(location.lat, location.lon);
+        setAirQuality(airRes || {});
+      } catch (err) {
+        console.error("Air Quality API failed:", err);
+        setAirQuality({}); 
+      }
+    };
+  
+    loadData();
   }, [location]);
 
   const currentAQ = airQuality?.hourly;
 
   console.log("Air quality", airQuality);
 
-  const currentTime = weather?.current_weather.time;
+  const currentTime = weather?.current_weather?.time;
 
 // Convert to hour format: 2026-04-06T18:00
 const formattedTime = currentTime?.slice(0, 13) + ":00";
 
-const index = airQuality?.hourly.time.findIndex(
+const index = airQuality?.hourly?.time.findIndex(
   (t) => t === formattedTime
 );
 
@@ -64,7 +82,7 @@ console.log("Index",index);
     );
   }
 
-  const hourlyData = weather.hourly.time.map((time, index) => ({
+  const hourlyData = weather?.hourly?.time.map((time, index) => ({
     time: new Date(time).getHours() + ":00",
     temperature: weather.hourly.temperature_2m[index],
     humidity: weather.hourly.relativehumidity_2m[index],
@@ -74,15 +92,15 @@ console.log("Index",index);
     <div className="flex bg-gray-100 min-h-screen">
       
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />
 
       {/* Main */}
-      <div className="flex-1 w-125 p-6">
+      <div className="flex-1 min-w-0 p-4 md:p-6 overflow-hidden">
         
-        <Header />
+        <Header setIsOpen={setIsOpen}/>
 
         {/* Top Section */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           
           {/* Current Weather */}
           <div className="col-span-2">
@@ -90,25 +108,25 @@ console.log("Index",index);
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
             <StatsCard
                 title="Precipitation"
-                value={weather.hourly.precipitation[0]}
+                value={weather?.hourly?.precipitation[0]}
                 unit="%"
             />
             <StatsCard
                 title="Humidity"
-                value={weather.hourly.relativehumidity_2m[0]}
+                value={weather?.hourly?.relativehumidity_2m[0]}
                 unit="%"
             />
             <StatsCard
                 title="Wind Speed"
-                value={weather.current_weather.windspeed}
+                value={weather?.current_weather?.windspeed}
                 unit="km/h"
             />
             <StatsCard
                 title="Min/Max"
-                value={`${weather.daily.temperature_2m_min[0]}° / ${weather.daily.temperature_2m_max[0]}°`}
+                value={`${weather?.daily?.temperature_2m_min[0]}° / ${weather?.daily?.temperature_2m_max[0]}°`}
             />
           </div>
 
@@ -129,7 +147,7 @@ console.log("Index",index);
     </span>
   </div>
 
-  <div className="grid grid-cols-6 gap-4">
+  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
     <AirQualityCard title="AQI" value={currentAQ?.us_aqi[index]} />
     <AirQualityCard title="PM10" value={currentAQ?.pm10[index]} unit="µg/m³" />
     <AirQualityCard title="PM2.5" value={currentAQ?.pm2_5[index]} unit="µg/m³" />
@@ -140,7 +158,7 @@ console.log("Index",index);
 </div>
 
         {/* Charts Section Placeholder */}
-        <div className="mt-6 bg-white p-6 rounded-xl max-h-[80vh] overflow-y-auto">
+        <div className="mt-6 bg-white p-4 md:p-6 rounded-xl max-h-[80vh] overflow-y-auto overflow-x-hidden">
   
   <div className="flex justify-between items-center mb-6">
     <h2 className="font-semibold">

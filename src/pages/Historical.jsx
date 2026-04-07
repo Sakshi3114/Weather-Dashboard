@@ -10,6 +10,7 @@ const Historical = () => {
     start: "2024-04-01",
     end: "2025-04-01",
   });
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     fetchHistoricalWeather(range.start, range.end).then(setData);
@@ -36,34 +37,38 @@ const Historical = () => {
   };
 
   return (
-    <div className="flex bg-gray-100 min-h-screen">
+    <div className="flex bg-gray-100 min-h-screen overflow-hidden">
       
-      <Sidebar />
+      <Sidebar isOpen={isOpen} setIsOpen={setIsOpen}  />
 
-      <div className="flex-1 p-6">
-        <Header />
+      <div className="flex-1 min-w-0 flex flex-col">
+  <div className="p-4 md:p-6">
+        <Header setIsOpen={setIsOpen}/>
 
         {/* Date Range Picker */}
-        <div className="bg-white p-4 rounded-xl mb-6 flex gap-4 items-center">
-          <input
-            type="date"
-            value={range.start}
-            onChange={(e) =>
-              setRange({ ...range, start: e.target.value })
-            }
-          />
+        <div className="bg-white p-4 rounded-xl mb-6 flex flex-col sm:flex-row gap-4 sm:items-center">
+  
+  <input
+    type="date"
+    value={range.start}
+    onChange={(e) =>
+      setRange({ ...range, start: e.target.value })
+    }
+    className="border rounded-lg px-3 py-2 w-full sm:w-auto"
+  />
 
-          <input
-            type="date"
-            value={range.end}
-            onChange={(e) =>
-              setRange({ ...range, end: e.target.value })
-            }
-          />
-        </div>
+  <input
+    type="date"
+    value={range.end}
+    onChange={(e) =>
+      setRange({ ...range, end: e.target.value })
+    }
+    className="border rounded-lg px-3 py-2 w-full sm:w-auto"
+  />
+</div>
 
         {/* Charts */}
-        <div className="space-y-6 max-h-[80vh] overflow-y-auto max-w-[80vw] overflow-x-auto">
+        <div className="space-y-6 max-h-[75vh] overflow-y-auto overflow-x-hidden">
 
           <HistoricalChart
             title="Temperature (Min / Max / Mean)"
@@ -95,6 +100,7 @@ const Historical = () => {
             lines={["pm10", "pm25"]}
           />
 
+        </div>
         </div>
       </div>
     </div>

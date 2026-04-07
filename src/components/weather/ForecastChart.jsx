@@ -13,7 +13,7 @@ const ForecastChart = ({ data, dataKey }) => {
     <div className="w-full overflow-x-auto">
       
       {/* Large width for scrolling */}
-      <div className="min-w-[900px] h-72">
+      <div className="min-w-225 h-72">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             

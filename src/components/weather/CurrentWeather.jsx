@@ -2,8 +2,8 @@ import { Card } from "@/components/ui/card";
 import { Sun, Moon } from "lucide-react";
 
 const CurrentWeather = ({ weather }) => {
-  const current = weather.current_weather;
-  const daily = weather.daily;
+  const current = weather?.current_weather;
+  const daily = weather?.daily;
 
   return (
     <Card className="p-6 flex rounded-2xl">
@@ -15,7 +15,7 @@ const CurrentWeather = ({ weather }) => {
         </p>
 
         <h1 className="text-5xl font-bold text-blue-900 mt-2">
-          {current.temperature}°C
+          {current?.temperature}°C
         </h1>
 
         <p className="text-gray-600 mt-2">
@@ -23,7 +23,7 @@ const CurrentWeather = ({ weather }) => {
         </p>
 
         <p className="text-sm text-gray-400 mt-1">
-          Feels like {current.temperature - 2}°C
+          Feels like {current?.temperature - 2}°C
         </p>
 
         {/* Sunrise / Sunset */}
@@ -33,7 +33,7 @@ const CurrentWeather = ({ weather }) => {
             <div>
               <p className="text-gray-400">Sunrise</p>
               <p>
-                {new Date(daily.sunrise[0]).toLocaleTimeString([], {
+                {new Date(daily?.sunrise[0]).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
@@ -46,7 +46,7 @@ const CurrentWeather = ({ weather }) => {
             <div>
               <p className="text-gray-400">Sunset</p>
               <p>
-                {new Date(daily.sunset[0]).toLocaleTimeString([], {
+                {new Date(daily?.sunset[0]).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
